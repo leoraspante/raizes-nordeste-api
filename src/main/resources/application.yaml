@@ -4,11 +4,20 @@ server:
 spring:
   application:
     name: raizes-nordeste-api
+
+  # Credenciais de acesso ao Banco de Dados H2.
   datasource:
     url: jdbc:h2:mem:raizesdb
     driverClassName: org.h2.Driver
     username: admin
     password: admin
+
+  # Credenciais de acesso web para o Spring Security.
+  security:
+    user:
+      name: admin
+      password: admin
+
   h2:
     console:
       enabled: true
