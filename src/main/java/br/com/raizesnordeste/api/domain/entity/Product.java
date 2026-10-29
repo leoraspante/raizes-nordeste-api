@@ -1,5 +1,6 @@
 package br.com.raizesnordeste.api.domain.entity;
 
+import br.com.raizesnordeste.api.domain.enums.Category;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -27,9 +28,10 @@ public class Product {
 
     private String description;
 
-    @NotBlank
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String category;
+    private Category category;
 
     @NotNull
     @PositiveOrZero

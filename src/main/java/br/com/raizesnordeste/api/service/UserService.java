@@ -9,6 +9,8 @@ import br.com.raizesnordeste.api.dto.response.UserResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -42,5 +44,17 @@ public class UserService {
                 savedUser.getEmail(),
                 savedUser.getRole()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponseDTO> findAll() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserResponseDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole()
+                ))
+                .toList();
     }
 }
