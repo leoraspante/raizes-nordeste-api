@@ -15,17 +15,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Desabilita a proteção CSRF temporariamente para permitir as requisições do H2.
+                // Desativa a proteção CSRF para permitir as requisições POST via Swagger
                 .csrf(AbstractHttpConfigurer::disable)
-                // Libera o acesso total para a URL do h2-console e exige autenticação para o resto.
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                // Permite a renderização de frames da mesma origem (necessário para a interface do H2).
+
+                // Permite a renderização de frames da mesma origem (necessário para o H2 Console)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                // Mantém o formulário de login padrão do Spring para as outras rotas.
-                .formLogin(form -> form.permitAll());
+
+                // Libera ABSOLUTAMENTE TODAS as rotas da aplicação provisoriamente
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
 
         return http.build();
     }

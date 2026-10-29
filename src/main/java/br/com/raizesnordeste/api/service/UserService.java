@@ -2,6 +2,7 @@ package br.com.raizesnordeste.api.service;
 
 import br.com.raizesnordeste.api.domain.entity.User;
 import br.com.raizesnordeste.api.domain.enums.Role;
+import br.com.raizesnordeste.api.domain.exception.BusinessRuleException;
 import br.com.raizesnordeste.api.domain.repository.UserRepository;
 import br.com.raizesnordeste.api.dto.request.UserRequestDTO;
 import br.com.raizesnordeste.api.dto.response.UserResponseDTO;
@@ -22,7 +23,7 @@ public class UserService {
 
         // Verifica se o e-mail informado já está sendo utilizado em outro cadastro.
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("E-mail já cadastrado no sistema.");
+            throw new BusinessRuleException("E-mail já cadastrado no sistema.");
         }
 
         User user = new User();
