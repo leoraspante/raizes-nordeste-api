@@ -30,3 +30,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# Configurações personalizadas da API
+api:
+  security:
+    jwt:
+      secret: YmFja2VuZC1yYWl6ZXMtbm9yZGVzdGUtZW50ZXJwcmlzZS1rZXk=

@@ -6,6 +6,7 @@ import br.com.raizesnordeste.api.domain.exception.BusinessRuleException;
 import br.com.raizesnordeste.api.domain.repository.UserRepository;
 import br.com.raizesnordeste.api.dto.request.UserRequestDTO;
 import br.com.raizesnordeste.api.dto.response.UserResponseDTO;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,15 +16,17 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    // Injetamos o PasswordEncoder no construtor
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public UserResponseDTO create(UserRequestDTO request) {
 
-        // Verifica se o e-mail informado já está sendo utilizado em outro cadastro.
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new BusinessRuleException("E-mail já cadastrado no sistema.");
         }
@@ -31,9 +34,10 @@ public class UserService {
         User user = new User();
         user.setName(request.name());
         user.setEmail(request.email());
-        user.setPassword(request.password());
 
-        // Garante que o perfil cadastrado seja sempre do tipo "ClIENT".
+        // A senha agora é criptografada antes de ser salva no banco H2
+        user.setPassword(passwordEncoder.encode(request.password()));
+
         user.setRole(Role.CLIENT);
 
         User savedUser = userRepository.save(user);

@@ -1,8 +1,11 @@
 package br.com.raizesnordeste.api.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +21,12 @@ public class SwaggerConfig {
                         .description("API REST desenvolvida para a Atividade Eletiva IV - Uninter.")
                         .contact(new Contact()
                                 .name("Leonardo Raspante - RU: 4324217")
-                                .email("leonardo.raspante@gmail.com")));
-
+                                .email("leonardo.raspante@gmail.com")))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")));
     }
 }

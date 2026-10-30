@@ -80,7 +80,7 @@ public class OrderService {
         // Processa cada item do pedido.
         for (OrderItemRequestDTO itemDTO : request.items()) {
             Product product = productRepository.findById(itemDTO.productId())
-                    .orElseThrow(() -> new BusinessRuleException("Produto: " + itemDTO.productId() + "não encontrado."));
+                    .orElseThrow(() -> new BusinessRuleException("Produto: " + itemDTO.productId() + " não encontrado."));
 
             // Verifica se o produto pertence ao cardápio da filial.
             if (!unitProductRepository.existsByUnitIdAndProductId(unit.getId(), product.getId())) {
@@ -105,6 +105,27 @@ public class OrderService {
         }
 
         order.setTotalAmount(totalAmount);
+
+        // =====================================================================
+        // Regra de Negócio: Sistema de Fidelidade e Taxa de Entrega
+        // =====================================================================
+        if (order.getServiceType() == ServiceType.ONLINE) {
+            // Inicializa os pontos do utilizador caso estejam nulos (prevenção de NullPointerException)
+            if (user.getLoyaltyPoints() == null) {
+                user.setLoyaltyPoints(0);
+            }
+
+            if (user.getLoyaltyPoints() >= 10) {
+                // Utilizador atingiu a meta: ganha a entrega grátis e deduzimos 10 pontos.
+                user.setLoyaltyPoints(user.getLoyaltyPoints() - 10);
+            } else {
+                // Utilizador ainda não atingiu a meta: adiciona a taxa de entrega fixa de R$ 10,00 e ganha 1 ponto.
+                order.setTotalAmount(order.getTotalAmount().add(new BigDecimal("10.00")));
+                user.setLoyaltyPoints(user.getLoyaltyPoints() + 1);
+            }
+            // A anotação @Transactional garantirá que esta atualização na entidade User seja guardada no banco.
+            userRepository.save(user);
+        }
 
         // Salva o pedido.
         Order savedOrder = orderRepository.save(order);
