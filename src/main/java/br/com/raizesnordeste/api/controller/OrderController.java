@@ -37,4 +37,13 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDTO>> findAll() {
         return ResponseEntity.ok(orderService.findAll());
     }
+
+    @PatchMapping("/{id}/payment")
+    public ResponseEntity<br.com.raizesnordeste.api.dto.response.OrderResponseDTO> processPayment(
+            @PathVariable Long id,
+            @RequestBody @Valid br.com.raizesnordeste.api.dto.request.PaymentMockRequestDTO request) {
+
+        br.com.raizesnordeste.api.dto.response.OrderResponseDTO response = orderService.processMockPayment(id, request);
+        return ResponseEntity.ok(response);
+    }
 }

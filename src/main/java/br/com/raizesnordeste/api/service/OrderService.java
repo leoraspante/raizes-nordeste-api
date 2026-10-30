@@ -7,6 +7,7 @@ import br.com.raizesnordeste.api.domain.exception.BusinessRuleException;
 import br.com.raizesnordeste.api.domain.repository.*;
 import br.com.raizesnordeste.api.dto.request.OrderItemRequestDTO;
 import br.com.raizesnordeste.api.dto.request.OrderRequestDTO;
+import br.com.raizesnordeste.api.dto.request.PaymentMockRequestDTO;
 import br.com.raizesnordeste.api.dto.response.OrderItemResponseDTO;
 import br.com.raizesnordeste.api.dto.response.OrderResponseDTO;
 import org.springframework.stereotype.Service;
@@ -144,5 +145,45 @@ public class OrderService {
                     itemDTOs
             );
         }).toList();
+    }
+
+    @Transactional
+    public OrderResponseDTO processMockPayment(Long orderId, PaymentMockRequestDTO request) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessRuleException("Pedido não encontrado."));
+
+        // Garante que somente sejam processados pagamentos de pedidos com status "AWAITING_PAYMENT".
+        if (order.getStatus() != OrderStatus.AWAITING_PAYMENT) {
+            throw new BusinessRuleException("O pagamento não pode ser processado. Status atual: " + order.getStatus());
+        }
+
+        // Simulação do Gateway de pagamento.
+        if (request.isApproved()) {
+            order.setStatus(OrderStatus.PAID);
+        }  else {
+            order.setStatus(OrderStatus.CANCELED);
+        }
+
+        Order savedOrder = orderRepository.save(order);
+
+        // Padronização do JSON de retorno.
+        List<OrderItemResponseDTO> itemDTOs = savedOrder.getItems().stream()
+                .map(item -> {
+                    BigDecimal subTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    return new OrderItemResponseDTO(
+                            item.getProduct().getId(),
+                            item.getProduct().getName(),
+                            item.getQuantity(),
+                            item.getUnitPrice(),
+                            subTotal
+                    );
+                }).toList();
+
+        return new OrderResponseDTO(
+                savedOrder.getId(), savedOrder.getUser().getId(), savedOrder.getUnit().getId(),
+                savedOrder.getStatus(), savedOrder.getPaymentMethod(), savedOrder.getServiceType(),
+                savedOrder.getTotalAmount(), savedOrder.getCreatedAt(), itemDTOs
+        );
     }
 }
