@@ -17,7 +17,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "tb_orders")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

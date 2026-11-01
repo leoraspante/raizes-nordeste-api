@@ -6,10 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @Hidden
 @RestControllerAdvice
@@ -31,7 +30,11 @@ public class ResourceExceptionHandler {
     // Trata erros de digitação capturados pelo @Valid (ex: e-mail inválido) - Retorna erro 422.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<StandardError> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        String errorMessage = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+
+        // Mapeia todos os erros contidos no payload e os concatena em uma única string.
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining("; "));
 
         StandardError error = new StandardError(
                 Instant.now(),

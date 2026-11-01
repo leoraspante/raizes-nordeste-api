@@ -24,6 +24,16 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Realiza o cadastro de um novo utilizador na plataforma.
+     *
+     * Diretrizes de Segurança e Privacidade (LGPD):
+     * - Proteção de Dados: A senha enviada pelo utilizador é convertida num hash irreversível
+     *   através do algoritmo BCrypt antes da persistência, garantindo que nem mesmo os
+     *   administradores da base de dados tenham acesso à credencial real.
+     * - Prevenção de Escalada de Privilégios: A role 'CLIENT' é injetada obrigatoriamente no backend.
+     *   Isto impede que um invasor manipule o payload do JSON para tentar criar uma conta de gestor.
+     */
     @Transactional
     public UserResponseDTO create(UserRequestDTO request) {
 

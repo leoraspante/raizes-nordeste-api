@@ -12,7 +12,8 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "tb_order_products")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

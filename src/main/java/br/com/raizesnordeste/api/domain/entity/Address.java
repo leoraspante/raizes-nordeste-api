@@ -10,7 +10,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "tb_addresses")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

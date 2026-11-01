@@ -38,6 +38,15 @@ public class OrderService {
         this.addressRepository = addressRepository;
     }
 
+    /**
+     * Processa a criação de um novo pedido no motor de vendas.
+     *
+     * Decisões de Arquitetura e Negócio:
+     * - Congelamento de Preços: O valor atual do produto é copiado para o item do pedido.
+     *   Garantindo que futuras alterações no catálogo não quebrem o histórico financeiro da empresa.
+     * - Motor de Fidelidade: Conforme as regras da franquia, pedidos do tipo ONLINE possuem uma taxa fixa
+     *   de entrega de R$ 10,00. Clientes que acumulam 10 pontos recebem isenção automática dessa taxa na próxima entrega.
+     */
     @Transactional
     public OrderResponseDTO create(OrderRequestDTO request) {
 
@@ -58,11 +67,9 @@ public class OrderService {
 
         // Validação do endereço de entrega.
         if (request.serviceType() != ServiceType.IN_PERSON) {
-
             if (request.deliveryAddressId() == null) {
                 throw new BusinessRuleException("Para pedidos do tipo " + request.serviceType() + ", o endereço de entrega é obrigatório.");
             }
-
             Address address = addressRepository.findById(request.deliveryAddressId())
                     .orElseThrow(() -> new BusinessRuleException("Endereço de entrega não encontrado."));
 
@@ -114,7 +121,6 @@ public class OrderService {
             if (user.getLoyaltyPoints() == null) {
                 user.setLoyaltyPoints(0);
             }
-
             if (user.getLoyaltyPoints() >= 10) {
                 // Utilizador atingiu a meta: ganha a entrega grátis e deduzimos 10 pontos.
                 user.setLoyaltyPoints(user.getLoyaltyPoints() - 10);
@@ -129,7 +135,6 @@ public class OrderService {
 
         // Salva o pedido.
         Order savedOrder = orderRepository.save(order);
-
         return new OrderResponseDTO(
                 savedOrder.getId(), user.getId(), unit.getId(), savedOrder.getStatus(),
                 savedOrder.getPaymentMethod(), savedOrder.getServiceType(), savedOrder.getTotalAmount(),
@@ -168,6 +173,13 @@ public class OrderService {
         }).toList();
     }
 
+    /**
+     * Simula o processamento assíncrono de um Gateway de Pagamento externo (Webhook).
+     *
+     * Em conformidade com o estudo de caso, a Raízes do Nordeste não processa pagamentos diretamente.
+     * Este bloco atua como o ponto de retorno (callback) do serviço parceiro.
+     * Alterando o status da máquina de estados do pedido para PAGO ou CANCELADO.
+     */
     @Transactional
     public OrderResponseDTO processMockPayment(Long orderId, PaymentMockRequestDTO request) {
 

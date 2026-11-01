@@ -11,7 +11,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "tb_unit_products", uniqueConstraints = @UniqueConstraint(columnNames = {"unit_id", "product_id"}))
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
