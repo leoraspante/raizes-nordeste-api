@@ -4,6 +4,7 @@ import br.com.raizesnordeste.api.domain.entity.User;
 import br.com.raizesnordeste.api.domain.enums.Role;
 import br.com.raizesnordeste.api.domain.exception.BusinessRuleException;
 import br.com.raizesnordeste.api.domain.repository.UserRepository;
+import br.com.raizesnordeste.api.dto.request.EmployeeRequestDTO;
 import br.com.raizesnordeste.api.dto.request.UserRequestDTO;
 import br.com.raizesnordeste.api.dto.response.UserResponseDTO;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +42,34 @@ public class UserService {
 
         user.setRole(Role.CLIENT);
         user.setLoyaltyPoints(0);
+
+        User savedUser = userRepository.save(user);
+
+        return new UserResponseDTO(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
+    }
+
+    /**
+     * Cadastra um novo funcionário (Atendente ou Gerente).
+     * O perfil de acesso (Role) é definido pelo payload, assumindo que a rota
+     */
+    @Transactional
+    public UserResponseDTO createEmployee(EmployeeRequestDTO request) {
+
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new BusinessRuleException("E-mail já cadastrado no sistema.");
+        }
+
+        User user = new User();
+        user.setName(request.name());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
+
+        user.setRole(request.role());
 
         User savedUser = userRepository.save(user);
 

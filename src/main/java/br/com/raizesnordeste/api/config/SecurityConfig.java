@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
                         // Endpoints restritos (Role-Based Access Control - RBAC).
+                        .requestMatchers(HttpMethod.POST, "/employees").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/units", "/products", "/unit-products").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/orders").hasAnyRole("CLIENT", "ATTENDANT", "MANAGER")
                         .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAnyRole("ATTENDANT", "MANAGER")
