@@ -4,6 +4,10 @@ import br.com.raizesnordeste.api.domain.entity.OrderProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Camada de persistência para os itens individuais (linha de pedido).
+ */
+
 @Repository
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Long> {
 }
