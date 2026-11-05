@@ -4,6 +4,7 @@ public record UnitProductResponseDTO(
         Long id,
         Long unitId,
         Long productId,
-        Boolean isAvailable
+        Boolean isAvailable,
+        Integer quantity
 ) {
 }

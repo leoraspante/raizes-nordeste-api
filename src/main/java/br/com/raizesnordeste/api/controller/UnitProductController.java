@@ -1,6 +1,7 @@
 package br.com.raizesnordeste.api.controller;
 
 import br.com.raizesnordeste.api.dto.request.UnitProductRequestDTO;
+import br.com.raizesnordeste.api.dto.request.UnitProductUpdateDTO;
 import br.com.raizesnordeste.api.dto.response.UnitProductResponseDTO;
 import br.com.raizesnordeste.api.service.UnitProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,5 +39,16 @@ public class UnitProductController {
     @Operation(summary = "Lista vínculos de produtos", description = "Retorna a relação de quais produtos estão disponíveis em quais filiais.")
     public ResponseEntity<List<UnitProductResponseDTO>> findAll() {
         return ResponseEntity.ok(unitProductService.findAll());
+    }
+
+    @PatchMapping("/{unitId}/products/{productId}")
+    @Operation(summary = "Atualiza estoque e disponibilidade", description = "Permite atualizar a quantidade em estoque e o status de disponibilidade de um produto em uma filial.")
+    public ResponseEntity<UnitProductResponseDTO> updateStock(
+            @PathVariable Long unitId,
+            @PathVariable Long productId,
+            @RequestBody @Valid UnitProductUpdateDTO request) {
+
+        UnitProductResponseDTO response = unitProductService.updateStock(unitId, productId, request);
+        return ResponseEntity.ok(response);
     }
 }
