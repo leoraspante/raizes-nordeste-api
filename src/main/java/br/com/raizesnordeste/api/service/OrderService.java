@@ -39,25 +39,21 @@ public class OrderService {
     }
 
     /**
-     * Processa a criação de um novo pedido no motor de vendas.
-     *
-     * Decisões de Arquitetura e Negócio:
-     * - Congelamento de Preços: O valor atual do produto é copiado para o item do pedido.
-     *   Garantindo que futuras alterações no catálogo não quebrem o histórico financeiro da empresa.
-     * - Motor de Fidelidade: Conforme as regras da franquia, pedidos do tipo ONLINE possuem uma taxa fixa
-     *   de entrega de R$ 10,00. Clientes que acumulam 10 pontos recebem isenção automática dessa taxa na próxima entrega.
+     * Criação de pedido:
+     * - Congela o preço histórico do produto no ato da compra.
+     * - Isenta a taxa de frete para compras KIOSK ou IN_PERSON.
+     * - Gere o programa de fidelidade (1 ponto/compra e frete grátis a cada 10 pontos).
+     * - Valida e deduz o estoque regional da filial.
      */
     @Transactional
     public OrderResponseDTO create(OrderRequestDTO request) {
 
-        // Validação de Usuário e Filial.
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new BusinessRuleException("Usuário não encontrado."));
 
         Unit unit = unitRepository.findById(request.unitId())
                 .orElseThrow(() -> new BusinessRuleException("Filial não encontrada."));
 
-        // Inicia-se o processo do pedido.
         Order order = new Order();
         order.setUser(user);
         order.setUnit(unit);
@@ -65,34 +61,38 @@ public class OrderService {
         order.setPaymentMethod(request.paymentMethod());
         order.setServiceType(request.serviceType());
 
-        // Validação do endereço de entrega.
-        if (request.serviceType() != ServiceType.IN_PERSON) {
+        // Validação de endereço: Dispensado para TOTEM (KIOSK) e Balcão (IN_PERSON)
+        if (request.serviceType() != ServiceType.IN_PERSON && request.serviceType() != ServiceType.KIOSK) {
             if (request.deliveryAddressId() == null) {
-                throw new BusinessRuleException("Para pedidos do tipo " + request.serviceType() + ", o endereço de entrega é obrigatório.");
+                throw new BusinessRuleException("Para pedidos do tipo: " + request.serviceType() + ", o endereço de entrega é obrigatório.");
             }
             Address address = addressRepository.findById(request.deliveryAddressId())
                     .orElseThrow(() -> new BusinessRuleException("Endereço de entrega não encontrado."));
 
-            // Garante que o usuário não utilize o endereço de entrega pertencente a outro cliente.
             if (!address.getUser().getId().equals(user.getId())) {
                 throw new BusinessRuleException("O endereço de entrega informado não pertence a este usuário.");
             }
-
             order.setDeliveryAddress(address);
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItemResponseDTO> responseItems = new ArrayList<>();
 
-        // Processa cada item do pedido.
         for (OrderItemRequestDTO itemDTO : request.items()) {
             Product product = productRepository.findById(itemDTO.productId())
                     .orElseThrow(() -> new BusinessRuleException("Produto: " + itemDTO.productId() + " não encontrado."));
 
-            // Verifica se o produto pertence ao cardápio da filial.
-            if (!unitProductRepository.existsByUnitIdAndProductId(unit.getId(), product.getId())) {
-                throw new BusinessRuleException("O produto '" + product.getName() + "' não está disponível nesta filial.");
+            // Validação de Catálogo e Estoque Regional
+            UnitProduct unitProduct = unitProductRepository.findByUnitIdAndProductId(unit.getId(), product.getId())
+                    .orElseThrow(() -> new BusinessRuleException("O produto '" + product.getName() + "' não está disponível nesta filial."));
+
+            if (unitProduct.getQuantity() < itemDTO.quantity()) {
+                throw new BusinessRuleException("Estoque insuficiente para o produto '" + product.getName() + "'. Disponível: " + unitProduct.getQuantity());
             }
+
+            // Dedução imediata do estoque.
+            unitProduct.setQuantity(unitProduct.getQuantity() - itemDTO.quantity());
+            unitProductRepository.save(unitProduct);
 
             OrderProduct orderProduct = new OrderProduct();
             orderProduct.setOrder(order);
@@ -113,28 +113,22 @@ public class OrderService {
 
         order.setTotalAmount(totalAmount);
 
-        // =====================================================================
-        // Regra de Negócio: Sistema de Fidelidade e Taxa de Entrega
-        // =====================================================================
-        if (order.getServiceType() == ServiceType.ONLINE) {
-            // Inicializa os pontos do utilizador caso estejam nulos (prevenção de NullPointerException)
-            if (user.getLoyaltyPoints() == null) {
-                user.setLoyaltyPoints(0);
-            }
+        // Sistema de Fidelidade e Frete
+        if (order.getServiceType() == ServiceType.ONLINE || order.getServiceType() == ServiceType.PHONE) {
+
+            if (user.getLoyaltyPoints() == null) user.setLoyaltyPoints(0);
+
             if (user.getLoyaltyPoints() >= 10) {
-                // Utilizador atingiu a meta: ganha a entrega grátis e deduzimos 10 pontos.
                 user.setLoyaltyPoints(user.getLoyaltyPoints() - 10);
             } else {
-                // Utilizador ainda não atingiu a meta: adiciona a taxa de entrega fixa de R$ 10,00 e ganha 1 ponto.
                 order.setTotalAmount(order.getTotalAmount().add(new BigDecimal("10.00")));
                 user.setLoyaltyPoints(user.getLoyaltyPoints() + 1);
             }
-            // A anotação @Transactional garantirá que esta atualização na entidade User seja guardada no banco.
             userRepository.save(user);
         }
 
-        // Salva o pedido.
         Order savedOrder = orderRepository.save(order);
+
         return new OrderResponseDTO(
                 savedOrder.getId(), user.getId(), unit.getId(), savedOrder.getStatus(),
                 savedOrder.getPaymentMethod(), savedOrder.getServiceType(), savedOrder.getTotalAmount(),
@@ -145,8 +139,6 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponseDTO> findAll() {
         return orderRepository.findAll().stream().map(order -> {
-
-            // Mapeia os itens do pedido resgatando o preço histórico congelado
             List<OrderItemResponseDTO> itemDTOs = order.getItems().stream()
                     .map(item -> {
                         BigDecimal subTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -154,31 +146,21 @@ public class OrderService {
                                 item.getProduct().getId(),
                                 item.getProduct().getName(),
                                 item.getQuantity(),
-                                item.getUnitPrice(), // O preço que estava no dia da compra
+                                item.getUnitPrice(),
                                 subTotal
                         );
                     }).toList();
 
             return new OrderResponseDTO(
-                    order.getId(),
-                    order.getUser().getId(),
-                    order.getUnit().getId(),
-                    order.getStatus(),
-                    order.getPaymentMethod(),
-                    order.getServiceType(),
-                    order.getTotalAmount(),
-                    order.getCreatedAt(),
-                    itemDTOs
+                    order.getId(), order.getUser().getId(), order.getUnit().getId(),
+                    order.getStatus(), order.getPaymentMethod(), order.getServiceType(),
+                    order.getTotalAmount(), order.getCreatedAt(), itemDTOs
             );
         }).toList();
     }
 
     /**
-     * Simula o processamento assíncrono de um Gateway de Pagamento externo (Webhook).
-     *
-     * Em conformidade com o estudo de caso, a Raízes do Nordeste não processa pagamentos diretamente.
-     * Este bloco atua como o ponto de retorno (callback) do serviço parceiro.
-     * Alterando o status da máquina de estados do pedido para PAGO ou CANCELADO.
+     * Processa callback assíncrono de pagamento externo.
      */
     @Transactional
     public OrderResponseDTO processMockPayment(Long orderId, PaymentMockRequestDTO request) {
@@ -186,12 +168,10 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessRuleException("Pedido não encontrado."));
 
-        // Garante que somente sejam processados pagamentos de pedidos com status "AWAITING_PAYMENT".
         if (order.getStatus() != OrderStatus.AWAITING_PAYMENT) {
             throw new BusinessRuleException("O pagamento não pode ser processado. Status atual: " + order.getStatus());
         }
 
-        // Simulação do Gateway de pagamento.
         if (request.isApproved()) {
             order.setStatus(OrderStatus.PAID);
         }  else {
@@ -200,7 +180,6 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Padronização do JSON de retorno.
         List<OrderItemResponseDTO> itemDTOs = savedOrder.getItems().stream()
                 .map(item -> {
                     BigDecimal subTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));

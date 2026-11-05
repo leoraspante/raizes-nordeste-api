@@ -33,5 +33,10 @@ public class UnitProduct {
     private Product product;
 
     @Column(name = "is_available", nullable = false)
+    @Builder.Default
     private Boolean isAvailable = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer quantity = 0;
 }
