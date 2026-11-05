@@ -30,43 +30,31 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Configura a API para não guardar sessão (exigindo o envio do Token em cada requisição)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-
-                // Mapeamento das regras de acesso
                 .authorizeHttpRequests(auth -> auth
-                        // Libera Swagger e documentação OpenAPI
+                        // Endpoints públicos.
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Libera consola do H2
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Libera o login para todos
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        // Libera a criação de novos usuários (para que clientes possam se cadastrar sozinhos)
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
-                        // Exemplo de regra futura: apenas ADMIN pode cadastrar produtos
-                        // .requestMatchers(HttpMethod.POST, "/products").hasRole("ADMIN")
+                        // Endpoints restritos (Role-Based Access Control - RBAC).
+                        .requestMatchers(HttpMethod.POST, "/units", "/products", "/unit-products").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/orders").hasAnyRole("CLIENT", "ATTENDANT", "MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAnyRole("ATTENDANT", "MANAGER")
 
-                        // Trava absolutamente todas as outras rotas (exigirá Token válido)
                         .anyRequest().authenticated()
                 )
-
-                // Injeta a nossa "catraca" ANTES da validação padrão do Spring
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .build();
     }
 
-    // Exporta o AuthenticationManager para o nosso AuthenticationController poder utilizá-lo
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // Configura o algoritmo de criptografia padrão do Spring (BCrypt)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

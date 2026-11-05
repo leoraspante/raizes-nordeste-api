@@ -18,21 +18,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Injetamos o PasswordEncoder no construtor
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * Realiza o cadastro de um novo utilizador na plataforma.
-     *
-     * Diretrizes de Segurança e Privacidade (LGPD):
-     * - Proteção de Dados: A senha enviada pelo utilizador é convertida num hash irreversível
-     *   através do algoritmo BCrypt antes da persistência, garantindo que nem mesmo os
-     *   administradores da base de dados tenham acesso à credencial real.
-     * - Prevenção de Escalada de Privilégios: A role 'CLIENT' é injetada obrigatoriamente no backend.
-     *   Isto impede que um invasor manipule o payload do JSON para tentar criar uma conta de gestor.
+     * Cadastra um novo cliente com criptografia de senha (BCrypt)
+     * e atribuição compulsória do perfil CLIENT (prevenindo escalada de privilégios).
      */
     @Transactional
     public UserResponseDTO create(UserRequestDTO request) {
@@ -44,11 +37,10 @@ public class UserService {
         User user = new User();
         user.setName(request.name());
         user.setEmail(request.email());
-
-        // A senha agora é criptografada antes de ser salva no banco H2
         user.setPassword(passwordEncoder.encode(request.password()));
 
         user.setRole(Role.CLIENT);
+        user.setLoyaltyPoints(0);
 
         User savedUser = userRepository.save(user);
 
