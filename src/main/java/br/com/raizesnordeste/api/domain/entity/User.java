@@ -12,7 +12,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Classe responsável pelo armazenamento de dados referente ao cadastro de usuários do sistema.
+ * Entidade central de gestão de identidades do sistema (Clientes, Atendentes e Gerentes).
+ * Implementa a interface UserDetails do Spring Security para integração direta
+ * com o ecossistema de autenticação e RBAC (Role-Based Access Control) via JWT.
  */
 
 @Entity
@@ -52,11 +54,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
-
-    // Métodos do Spring Security.
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Mapeamento dos privilégios com base no Enum 'Role'
         return List.of(new SimpleGrantedAuthority(this.role.getRole()));
 
     }

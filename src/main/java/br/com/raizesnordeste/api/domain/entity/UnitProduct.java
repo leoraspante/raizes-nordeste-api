@@ -5,8 +5,9 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 /**
- * Classe responsável pelo relacionamento entre filiais (Unit) e produtos (Product).
- * Permitindo o controle de estoque/disponibilidade de catálogo por unidade.
+ * Entidade responsável pelo controle de estoque distribuído.
+ * Vincula um produto global do catálogo a uma filial específica,
+ * permitindo gerir a quantidade física disponível e o status de ativação regional.
  */
 
 @Entity

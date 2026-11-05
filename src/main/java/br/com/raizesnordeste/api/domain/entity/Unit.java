@@ -5,7 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 /**
- * Classe responsável pela representação das filiais do restaurante.
+ * Entidade que representa uma filial física do restaurante.
+ * Armazena os dados de localização de forma desnormalizada (embutidos na própria tabela)
+ * para otimizar as consultas geográficas de disponibilidade.
  */
 
 @Entity

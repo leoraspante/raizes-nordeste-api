@@ -6,8 +6,11 @@ import lombok.*;
 import java.math.BigDecimal;
 
 /**
- * Classe responsável pela representação individual de cada item contido em um pedido.
- * Armazenando preço no momento da compra, garantindo o histórico financeiro.
+ /**
+ * Entidade de ligação (Many-to-Many resolvida) entre Order e Product.
+ * Imutável no contexto de negócio: armazena a fotografia do preço (unitPrice)
+ * no exato momento da compra, blindando o histórico financeiro contra
+ * alterações futuras no catálogo de produtos.
  */
 
 @Entity
@@ -34,11 +37,10 @@ public class OrderProduct {
     private Product product;
 
     @NotNull
-    @Positive // Garante que a quantidade mínima seja 1.
+    @Positive
     @Column(nullable = false)
     private Integer quantity;
 
-    // Garante o registro do preço cobrado por unidade no momento em que o pedido foi fechado.
     @NotNull
     @PositiveOrZero
     @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)

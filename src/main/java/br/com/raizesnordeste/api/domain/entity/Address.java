@@ -5,7 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 /**
- * Classe responsável pelo armazenamento dos dados referentes aos endereços dos usuários.
+ * Entidade que representa os endereços de entrega dos clientes.
+ * Mapeada em relacionamento One-to-Many com a entidade User,
+ * permitindo que um cliente possua múltiplos endereços cadastrados.
  */
 
 @Entity

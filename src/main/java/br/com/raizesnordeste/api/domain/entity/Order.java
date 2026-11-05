@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Classe responsável pela centralização dos pedidos do restaurante.
+ * Entidade central do domínio de vendas.
+ * Orquestra as relações entre o cliente, a filial de atendimento, os itens comprados
+ * e o endereço de entrega (quando aplicável, dependendo do ServiceType).
  */
 
 @Entity
@@ -28,19 +30,16 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relacionamento com o cliente que realizou o pedido.
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",  nullable = false)
     private User  user;
 
-    // Relacionamento com a filial onde o pedido foi realizado.
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id",  nullable = false)
     private Unit unit;
 
-    // Endereço de entrega opcional (O ServiceType pode ser IN_PERSON).
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_address_id")
     private Address deliveryAddress;
@@ -71,6 +70,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> items = new ArrayList<>();
 
+    /**
+     * Garante o registo do timestamp exato de criação antes da persistência no banco.
+     */
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();

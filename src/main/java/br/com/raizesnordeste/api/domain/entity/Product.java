@@ -7,7 +7,9 @@ import lombok.*;
 import java.math.BigDecimal;
 
 /**
- * Classe responsável pelo cadastro/catálogo de produtos disponíveis no sistema.
+ * Entidade que representa o catálogo global de produtos da rede.
+ * Define os metadados base (nome, categoria) e o preço sugerido/padrão,
+ * que pode ser comercializado por diferentes filiais.
  */
 
 @Entity
