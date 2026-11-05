@@ -6,6 +6,7 @@ package br.com.raizesnordeste.api.domain.enums;
 
 public enum ServiceType {
     ONLINE,
-    IN_PERSON,
-    PHONE
+    IN_PERSON,      // Atendimentos realizados no balcão.
+    PHONE,
+    KIOSK           // Atendimentos realizados no Totem de auto-atendimento.
 }

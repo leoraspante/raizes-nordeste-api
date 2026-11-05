@@ -56,12 +56,9 @@ public class User implements UserDetails {
     // Métodos do Spring Security.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Mapeamento dos privilégios com base no seu Enum 'Role'
-        if (this.role.name().equals("ADMIN")) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        }
+        // Mapeamento dos privilégios com base no Enum 'Role'
+        return List.of(new SimpleGrantedAuthority(this.role.getRole()));
+
     }
 
     @Override
