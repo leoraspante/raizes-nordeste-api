@@ -1,7 +1,9 @@
 package br.com.raizesnordeste.api.domain.enums;
 
 /**
- * Enum responsável pelas opções de atendimento.
+ * Identifica o canal de origem e a modalidade de atendimento da venda.
+ * O tipo de serviço impacta diretamente na máquina de regras do negócio,
+ * como a isenção automática da taxa de entrega para modalidades físicas.
  */
 
 public enum ServiceType {

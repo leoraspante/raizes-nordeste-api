@@ -1,7 +1,8 @@
 package br.com.raizesnordeste.api.domain.enums;
 
 /**
- * Enum responsável pelo ciclo de vida operacional de um pedido.
+ * Representa a máquina de estados (State Machine) e o ciclo de vida operacional de um pedido,
+ * desde a sua captação financeira até à entrega final, devolução ou cancelamento.
  */
 
 public enum OrderStatus {

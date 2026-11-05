@@ -1,7 +1,8 @@
 package br.com.raizesnordeste.api.domain.enums;
 
 /**
- * Enum responsável pelas formas de pagamento disponíveis.
+ * Define as modalidades de liquidação financeira aceitas pelo sistema
+ * no momento do fechamento do pedido.
  */
 
 public enum PaymentMethod {
