@@ -13,6 +13,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtro de interceptação para arquitetura Stateless (sem sessão no servidor).
+ * Intercepta todas as requisições HTTP recebidas, extrai o Token JWT do cabeçalho,
+ * valida a sua assinatura criptográfica e, se válido, injeta o contexto de segurança
+ * na thread atual, permitindo que o Spring aplique as regras de autorização (RBAC).
+ */
+
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -35,13 +42,12 @@ public class SecurityFilter extends OncePerRequestFilter {
                 UserDetails user = userRepository.findByEmail(login)
                         .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-                // Cria o objeto de autenticação e força o Spring Security a reconhecer o utilizador como autenticado
+                // Reconhece o utilizador como autenticado no contexto da requisição atual.
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
-        // Continua o fluxo da requisição para o próximo filtro ou para o Controller
         filterChain.doFilter(request, response);
     }
 
@@ -50,7 +56,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (authHeader == null) {
             return null;
         }
-        // O token é enviado no formato "Bearer token-aqui". Removemos o prefixo para validar apenas o código.
         return authHeader.replace("Bearer ", "");
     }
 }

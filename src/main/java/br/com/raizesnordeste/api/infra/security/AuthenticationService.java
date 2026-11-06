@@ -1,5 +1,10 @@
 package br.com.raizesnordeste.api.infra.security;
 
+/**
+ * Serviço de integração com o motor do Spring Security.
+ * Fornece os dados do usuário (identidade e privilégios/Roles) extraídos da base de dados,
+ * utilizando o e-mail como chave única de autenticação (username) do sistema.
+ */
 import br.com.raizesnordeste.api.domain.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

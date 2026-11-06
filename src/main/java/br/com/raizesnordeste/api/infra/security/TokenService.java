@@ -12,6 +12,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+/**
+ * Motor de geração e validação de chaves JWT (JSON Web Tokens).
+ * Utiliza o algoritmo HMAC256 para assinar os tokens simetricamente, embutindo claims
+ * de negócio (como a Role) e garantindo uma expiração de curto prazo (2 horas)
+ * para mitigar os riscos de roubo de sessão.
+ */
+
 @Service
 public class TokenService {
 
