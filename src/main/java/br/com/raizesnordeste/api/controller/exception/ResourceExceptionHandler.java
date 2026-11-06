@@ -10,11 +10,21 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+/**
+ * Intercetor global de exceções (Controller Advice).
+ * Captura exceções lançadas nas camadas de Domínio ou Serviço e traduz
+ * para respostas HTTP padronizadas, evitando o vazamento de stack traces
+ * (HTTP 500) e garantindo uma integração resiliente com o frontend.
+ */
+
 @Hidden
 @RestControllerAdvice
 public class ResourceExceptionHandler {
 
-    // Trata as regras de negócio (ex: Cadastro de usuário com e-mail duplicado) - Retorna erro 400.
+    /**
+     * Interceta violações de regras de negócio (ex: estoque insuficiente, e-mail duplicado).
+     * Converte a falha interna num HTTP 400 (Bad Request) com mensagem humanizada.
+     */
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<StandardError> handleBusinessRuleException(BusinessRuleException ex, HttpServletRequest request) {
         StandardError error = new StandardError(
@@ -27,7 +37,11 @@ public class ResourceExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    // Trata erros de digitação capturados pelo @Valid (ex: e-mail inválido) - Retorna erro 422.
+    /**
+     * Interceta falhas de validação de contrato de entrada (Bean Validation / @Valid).
+     * Mapeia múltiplos erros de atributos (ex: e-mail inválido, CEP incorreto) num
+     * HTTP 422 (Unprocessable Content), detalhando exatamente o que o cliente deve corrigir.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<StandardError> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
 
