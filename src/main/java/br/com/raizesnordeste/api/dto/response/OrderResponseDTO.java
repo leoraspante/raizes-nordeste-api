@@ -7,6 +7,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Read-Model (Modelo de Leitura) completo (Agregado) de um pedido.
+ * Centraliza os dados transacionais, o estágio atual (status) e a lista de itens,
+ * servindo como contrato principal para o histórico de compras do cliente e painéis de gerência (PDV).
+ */
+
 public record OrderResponseDTO(
         Long orderId,
         Long userId,
