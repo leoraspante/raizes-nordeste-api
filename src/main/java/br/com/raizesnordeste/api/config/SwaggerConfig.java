@@ -9,6 +9,11 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuração da documentação interativa da API utilizando o padrão OpenAPI 3.
+ * Expõe as rotas, contratos de DTOs e configura a injeção global do cabeçalho
+ * de autorização (Bearer Token) para testes dinâmicos das rotas protegidas pelo Spring Security.
+ */
 @Configuration
 public class SwaggerConfig {
 

@@ -16,6 +16,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuração central da malha de segurança e roteamento da aplicação.
+ * Desativa o controlo de sessões Stateful em favor da arquitetura Stateless,
+ * e define a matriz de autorização (RBAC) mapeando endpoints aos privilégios (Roles).
+ */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -56,6 +62,10 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    /**
+     * Define o algoritmo BCrypt com fator de custo adaptativo para o hashing unidirecional de senhas,
+     * garantindo proteção contra ataques de força bruta e rainbow tables.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
