@@ -6,6 +6,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.util.List;
 
+/**
+ * Payload principal do motor de vendas.
+ * Centraliza os dados do cliente, canal de atendimento e itens escolhidos.
+ * A validação em cascata (@Valid na lista de itens) garante a integridade completa
+ * do carrinho de compras antes do processamento financeiro e de estoque.
+ */
+
 public record OrderRequestDTO(
 
         @NotNull(message = "O ID do usuário é obrigatório.")
