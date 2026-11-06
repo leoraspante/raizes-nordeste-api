@@ -9,6 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Gere o Catálogo Global de Produtos.
+ * Responsável por cadastrar os itens mestre que posteriormente
+ * serão distribuídos e ativados nas filiais (UnitProduct).
+ */
 @Service
 public class ProductService {
 

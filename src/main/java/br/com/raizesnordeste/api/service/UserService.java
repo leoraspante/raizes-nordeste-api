@@ -13,6 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Serviço central de RH e Gestão de Identidades.
+ * Isola rigorosamente a criação de perfis públicos (Clientes)
+ * da criação de perfis operacionais (Atendentes e Gerentes).
+ */
+
 @Service
 public class UserService {
 
@@ -25,8 +31,9 @@ public class UserService {
     }
 
     /**
-     * Cadastra um novo cliente com criptografia de senha (BCrypt)
-     * e atribuição compulsória do perfil CLIENT (prevenindo escalada de privilégios).
+     * Endpoint exposto para registro público (App/Site).
+     * Blinda a segurança ao forçar hardcoded a Role CLIENT,
+     * prevenindo ataques de escalada de privilégios via manipulação de JSON.
      */
     @Transactional
     public UserResponseDTO create(UserRequestDTO request) {
@@ -54,8 +61,8 @@ public class UserService {
     }
 
     /**
-     * Cadastra um novo funcionário (Atendente ou Gerente).
-     * O perfil de acesso (Role) é definido pelo payload, assumindo que a rota
+     * Rota isolada para o RH (uso restrito a Managers).
+     * Permite delegar explicitamente o nível de acesso (Role) no payload.
      */
     @Transactional
     public UserResponseDTO createEmployee(EmployeeRequestDTO request) {

@@ -10,6 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Gere o cadastro base das unidades físicas (Filiais).
+ */
+
 @Service
 public class UnitService {
 
@@ -19,6 +23,10 @@ public class UnitService {
         this.unitRepository = unitRepository;
     }
 
+    /**
+     * Cadastra uma nova filial garantindo a unicidade do nome na rede.
+     * Toda nova filial é criada operacionalmente ativa (isActive = true) por padrão.
+     */
     @Transactional
     public UnitResponseDTO create(UnitRequestDTO request) {
 
@@ -37,7 +45,6 @@ public class UnitService {
         unit.setState(request.state());
         unit.setZipCode(request.zipCode());
 
-        // Garantia de que a filial recém-criada inicie como ativa.
         unit.setIsActive(true);
 
         Unit savedUnit = unitRepository.save(unit);

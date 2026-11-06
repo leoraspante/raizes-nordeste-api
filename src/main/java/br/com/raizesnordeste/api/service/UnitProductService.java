@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+/**
+ * Gere o estoque distribuído e o catálogo regionalizado.
+ * Liga a entidade global (Product) à entidade física (Unit),
+ * aplicando inteligência para prevenir inconsistências operacionais.
+ */
 @Service
 public class UnitProductService {
 
@@ -29,6 +34,11 @@ public class UnitProductService {
         this.productRepository = productRepository;
     }
 
+    /**
+     * Vincula um produto do catálogo a uma filial.
+     * Previne duplicidade de vínculos e assegura que produtos criados sem estoque (Zero)
+     * nasçam obrigatoriamente inativos/indisponíveis.
+     */
     @Transactional
     public UnitProductResponseDTO create(UnitProductRequestDTO request) {
 
@@ -46,7 +56,7 @@ public class UnitProductService {
         unitProduct.setUnit(unit);
         unitProduct.setProduct(product);
 
-        // Garante a consistência do catálogo: produtos criados sem estoque nascem indisponíveis.
+        // Regra de Integridade: Produtos sem estoque não podem ser disponibilizados.
         if (unitProduct.getQuantity() == null || unitProduct.getQuantity() == 0) {
             unitProduct.setIsAvailable(false);
         } else {
@@ -77,6 +87,11 @@ public class UnitProductService {
                 .toList();
     }
 
+    /**
+     * Atualiza o inventário regional de um produto.
+     * Caso o gestor tente zerar o estoque, o sistema força dinamicamente
+     * a indisponibilidade do produto para proteger as vendas futuras.
+     */
     @Transactional
     public UnitProductResponseDTO updateStock(Long unitId, Long productId, UnitProductUpdateDTO request) {
 
@@ -85,8 +100,6 @@ public class UnitProductService {
 
         unitProduct.setQuantity(request.quantity());
 
-        // Regra de Negócio: Se a quantidade for 0, força a indisponibilidade.
-        // Caso contrário, respeita o que o gestor enviou no JSON.
         if (request.quantity() == 0) {
             unitProduct.setIsAvailable(false);
         } else {
@@ -100,7 +113,7 @@ public class UnitProductService {
                 unitProduct.getUnit().getId(),
                 unitProduct.getProduct().getId(),
                 unitProduct.getIsAvailable(),
-                unitProduct.getQuantity() // Certifique-se de que o seu ResponseDTO tem este campo mapeado!
+                unitProduct.getQuantity()
         );
     }
 }

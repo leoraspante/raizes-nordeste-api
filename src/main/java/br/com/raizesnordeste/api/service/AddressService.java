@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+/**
+ * Orquestra as operações relacionadas à carteira de endereços dos clientes.
+ */
+
 @Service
 public class AddressService {
 
@@ -22,6 +26,10 @@ public class AddressService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Vincula um novo endereço a um cliente existente.
+     * Garante a integridade referencial validando o ID do usuário antes da persistência.
+     */
     @Transactional
     public AddressResponseDTO create(AddressRequestDTO request) {
         User user = userRepository.findById(request.userId())

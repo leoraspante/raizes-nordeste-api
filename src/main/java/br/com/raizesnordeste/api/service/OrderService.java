@@ -17,6 +17,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Coração transacional do sistema ("Motor de Vendas").
+ * Orquestra regras críticas de negócio: baixa de estoque, congelamento de preços históricos,
+ * validação de isenção de frete por canal de venda e pontuação do programa de fidelidade.
+ */
 @Service
 public class OrderService {
 
@@ -39,11 +44,7 @@ public class OrderService {
     }
 
     /**
-     * Criação de pedido:
-     * - Congela o preço histórico do produto no ato da compra.
-     * - Isenta a taxa de frete para compras KIOSK ou IN_PERSON.
-     * - Gere o programa de fidelidade (1 ponto/compra e frete grátis a cada 10 pontos).
-     * - Valida e deduz o estoque regional da filial.
+     * Processa a criação de um pedido aplicando toda a malha de regras de negócio.
      */
     @Transactional
     public OrderResponseDTO create(OrderRequestDTO request) {
@@ -61,7 +62,7 @@ public class OrderService {
         order.setPaymentMethod(request.paymentMethod());
         order.setServiceType(request.serviceType());
 
-        // Validação de endereço: Dispensado para TOTEM (KIOSK) e Balcão (IN_PERSON)
+        // Regra: Validação de endereço dispensada para atendimento físico (TOTEM ou Balcão)
         if (request.serviceType() != ServiceType.IN_PERSON && request.serviceType() != ServiceType.KIOSK) {
             if (request.deliveryAddressId() == null) {
                 throw new BusinessRuleException("Para pedidos do tipo: " + request.serviceType() + ", o endereço de entrega é obrigatório.");
@@ -82,7 +83,7 @@ public class OrderService {
             Product product = productRepository.findById(itemDTO.productId())
                     .orElseThrow(() -> new BusinessRuleException("Produto: " + itemDTO.productId() + " não encontrado."));
 
-            // Validação de Catálogo e Estoque Regional
+            // Regra: Validação rigorosa de Catálogo e Estoque Regional da filial escolhida
             UnitProduct unitProduct = unitProductRepository.findByUnitIdAndProductId(unit.getId(), product.getId())
                     .orElseThrow(() -> new BusinessRuleException("O produto '" + product.getName() + "' não está disponível nesta filial."));
 
@@ -90,7 +91,7 @@ public class OrderService {
                 throw new BusinessRuleException("Estoque insuficiente para o produto '" + product.getName() + "'. Disponível: " + unitProduct.getQuantity());
             }
 
-            // Dedução imediata do estoque.
+            // Dedução imediata do estoque (Write-behind na transação)
             unitProduct.setQuantity(unitProduct.getQuantity() - itemDTO.quantity());
             unitProductRepository.save(unitProduct);
 
@@ -98,9 +99,8 @@ public class OrderService {
             orderProduct.setOrder(order);
             orderProduct.setProduct(product);
             orderProduct.setQuantity(itemDTO.quantity());
-            orderProduct.setUnitPrice(product.getPrice()); // Garante o congelamento do preço no momento da compra.
+            orderProduct.setUnitPrice(product.getPrice()); // Congelamento financeiro histórico
 
-            // Realiza o cálculo do subtotal e adiciona ao total.
             BigDecimal subTotal = product.getPrice().multiply(BigDecimal.valueOf(itemDTO.quantity()));
             totalAmount = totalAmount.add(subTotal);
 
@@ -113,7 +113,7 @@ public class OrderService {
 
         order.setTotalAmount(totalAmount);
 
-        // Sistema de Fidelidade e Frete
+        // Regra: Motor de Fidelidade e Precificação de Frete (apenas canais com entrega)
         if (order.getServiceType() == ServiceType.ONLINE || order.getServiceType() == ServiceType.PHONE) {
 
             if (user.getLoyaltyPoints() == null) user.setLoyaltyPoints(0);
@@ -136,6 +136,9 @@ public class OrderService {
         );
     }
 
+    /**
+     * Avança a máquina de estados do pedido com base na resposta (Mock) do gateway de pagamento.
+     */
     @Transactional(readOnly = true)
     public List<OrderResponseDTO> findAll() {
         return orderRepository.findAll().stream().map(order -> {
