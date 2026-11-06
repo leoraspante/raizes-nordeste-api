@@ -12,6 +12,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Endpoint para a gestão da carteira de endereços dos clientes.
+ * Foca-se nos dados necessários para a logística de entrega (delivery).
+ */
+
 @RestController
 @RequestMapping("/addresses")
 @Tag(name = "Endereços", description = "Gestão de endereços de entrega dos clientes")

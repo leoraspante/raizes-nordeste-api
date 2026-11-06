@@ -12,6 +12,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Endpoint dedicado à manutenção do Catálogo Global (itens mestre),
+ * que servem de base para a distribuição de estoque regional.
+ */
+
 @RestController
 @RequestMapping("/products")
 @Tag(name = "Produtos", description = "Catálogo global de itens do restaurante")

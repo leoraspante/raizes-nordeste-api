@@ -12,6 +12,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Ponto de entrada do Motor de Vendas.
+ * Recebe o payload do carrinho de compras e encaminha para orquestração de estoque, precificação e pagamentos.
+ */
+
 @RestController
 @RequestMapping("/orders")
 @Tag(name = "Pedidos", description = "Gestão do motor de vendas, ciclo de vida e pagamentos")

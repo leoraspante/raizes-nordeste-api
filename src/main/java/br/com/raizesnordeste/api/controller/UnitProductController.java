@@ -13,6 +13,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Endpoint para a gestão do cruzamento entre Produtos (Catálogo) e Unidades (Filiais).
+ * Vital para interfaces de controle de estoque regional e status de venda.
+ */
+
 @RestController
 @RequestMapping("/unit-products")
 @Tag(name = "Estoque e Disponibilidade", description = "Gestão do cardápio específico por filial (vínculo Produto-Unidade)")

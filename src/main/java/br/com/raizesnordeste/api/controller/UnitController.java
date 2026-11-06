@@ -12,6 +12,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Endpoint de administração geográfica das filiais operacionais da rede.
+ */
+
 @RestController
 @RequestMapping("/units")
 @Tag(name = "Filiais", description = "Gestão das unidades físicas da rede Raízes do Nordeste")

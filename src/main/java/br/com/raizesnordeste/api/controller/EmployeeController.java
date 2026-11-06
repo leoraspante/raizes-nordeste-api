@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
+/**
+ * Endpoint restrito (apenas MANAGER) para a gestão de recursos humanos (RH),
+ * separando a criação de funcionários da rota pública de clientes.
+ */
+
 @RestController
 @RequestMapping("/employees")
 public class EmployeeController {

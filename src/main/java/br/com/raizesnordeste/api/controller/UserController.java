@@ -12,6 +12,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Endpoint voltado especificamente para a gestão pública de clientes (B2C),
+ * separando a criação de contas de consumo da rota de recursos humanos.
+ */
+
 @RestController
 @RequestMapping("/users")
 @Tag(name = "Utilizadores", description = "Gestão de contas e perfis de acesso")

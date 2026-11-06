@@ -13,6 +13,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Endpoint público responsável por autenticar utilizadores e gerar o Token JWT
+ * necessário para transitar pela malha de segurança Stateless da API.
+ */
+
 @RestController
 @RequestMapping("/login")
 @Tag(name = "Autenticação", description = "Endpoint para login e geração de token JWT")
